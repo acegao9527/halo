@@ -16,9 +16,9 @@ mode: rule
 log-level: warning
 
 proxies:
-  - name: "GaoZeus"
+  - name: "BillZeus"
     type: ss
-    server: wuzhi1234.synology.me
+    server: zeus.yuanbin.me
     port: 8883
     cipher: aes-128-gcm
     password: "breakGFW!"
