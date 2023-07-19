@@ -106,6 +106,7 @@ import run.halo.app.service.UserService;
 import run.halo.app.utils.DateTimeUtils;
 import run.halo.app.utils.DateUtils;
 import run.halo.app.utils.FileUtils;
+import run.halo.app.utils.FilenameUtils;
 import run.halo.app.utils.HaloUtils;
 import run.halo.app.utils.JsonUtils;
 import run.halo.app.utils.VersionUtil;
@@ -230,12 +231,16 @@ public class BackupServiceImpl implements BackupService {
 
     @Override
     public BasePostDetailDTO importMarkdown(MultipartFile file) throws IOException {
+        try {
+            // Read markdown content.
+            String markdown = FileUtils.readString(file.getInputStream());
+            // TODO sheet import
+            return postService.importMarkdown(markdown, file.getOriginalFilename());
+        } catch (OutOfMemoryError error) {
+            throw new ServiceException(
+                "文件内容过大，无法导入。", error);
+        }
 
-        // Read markdown content.
-        String markdown = FileUtils.readString(file.getInputStream());
-
-        // TODO sheet import
-        return postService.importMarkdown(markdown, file.getOriginalFilename());
     }
 
     @Override
@@ -626,8 +631,9 @@ public class BackupServiceImpl implements BackupService {
             }
             content.append(postMarkdownVo.getOriginalContent());
             try {
+                String filename = postMarkdownVo.getTitle() + "-" + postMarkdownVo.getSlug();
                 String markdownFileName =
-                    postMarkdownVo.getTitle() + "-" + postMarkdownVo.getSlug() + ".md";
+                    FilenameUtils.sanitizeFilename(filename) + ".md";
                 Path markdownFilePath = Paths.get(markdownFileTempPathName, markdownFileName);
                 if (!Files.exists(markdownFilePath.getParent())) {
                     Files.createDirectories(markdownFilePath.getParent());
